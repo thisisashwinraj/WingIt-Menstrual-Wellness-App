@@ -94,13 +94,15 @@ class PeriodsDB:
         ''')
         self.conn.commit()
 
-    def add_period(self, userid, start_date, end_date, flow_intensity, notes=''):
+    def add_period(self, userid, start_date, end_date, flow_intensity='Medium', notes=''):
         cursor = self.conn.cursor()
         cursor.execute('''
             INSERT INTO Periods (userid, start_date, end_date, flow_intensity, notes)
             VALUES (?, ?, ?, ?, ?)
         ''', (userid, start_date, end_date, flow_intensity, notes))
         self.conn.commit()
+        period_id = cursor.lastrowid
+        return period_id
 
     def edit_period(self, userid, start_date, **kwargs):
         cursor = self.conn.cursor()
@@ -120,6 +122,11 @@ class PeriodsDB:
         cursor = self.conn.cursor()
         cursor.execute('SELECT * FROM Periods WHERE userid = ? AND start_date = ?', (userid, start_date))
         return cursor.fetchone()
+
+    def fetch_latest_periods(self, userid, count=10):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM Periods WHERE userid = ? ORDER BY start_date DESC LIMIT ?", (userid, count))
+        return cursor.fetchall()
 
     def delete_period(self, userid, start_date):
         cursor = self.conn.cursor()
@@ -153,7 +160,7 @@ class CyclesDB:
         self.conn.commit()
 
     def add_cycle(self, start_date, end_date, periodsid, userid):
-        cycle_length = (datetime.strptime(end_date, '%Y-%m-%d') - datetime.strptime(start_date, '%Y-%m-%d')).days
+        cycle_length = (datetime.strptime(end_date, '%Y-%m-%d') - datetime.strptime(start_date, '%Y-%m-%d')).days + 1
         cursor = self.conn.cursor()
         cursor.execute('''
             INSERT INTO Cycles (start_date, end_date, cycle_length, periodsid, userid)
@@ -179,6 +186,11 @@ class CyclesDB:
         cursor = self.conn.cursor()
         cursor.execute('SELECT * FROM Cycles WHERE userid = ? AND start_date = ?', (userid, start_date))
         return cursor.fetchone()
+
+    def fetch_latest_cycles(self, userid, count=10):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT * FROM Cycles WHERE userid = ? ORDER BY start_date DESC LIMIT ?", (userid, count))
+        return cursor.fetchall()
 
     def delete_cycle(self, userid, start_date):
         cursor = self.conn.cursor()
@@ -210,8 +222,7 @@ class SymptomsDB:
         ''')
         self.conn.commit()
 
-    def add_symptoms(self, userid, date, physical_symptoms=None, energy_level=None,
-                     sleep_quality=None, emotional_symptoms=None):
+    def add_symptoms(self, userid, date, physical_symptoms="", energy_level="", sleep_quality="", emotional_symptoms=""):
         cursor = self.conn.cursor()
         cursor.execute('''
             INSERT INTO Symptoms (userid, date, physical_symptoms, energy_level,
@@ -238,6 +249,11 @@ class SymptomsDB:
         cursor = self.conn.cursor()
         cursor.execute('SELECT * FROM Symptoms WHERE userid = ? AND date = ?', (userid, date))
         return cursor.fetchone()
+
+    def get_symptoms_between_two_dates(self, userid, start_date, end_date):
+        cursor = self.conn.cursor()
+        cursor.execute('SELECT * FROM Symptoms WHERE userid = ? AND date BETWEEN ? AND ?', (userid, start_date, end_date))
+        return cursor.fetchall()
 
     def delete_symptoms(self, userid, date):
         cursor = self.conn.cursor()
@@ -854,3 +870,12 @@ if __name__ == '__main__':
 
     ##########################################################################
     """
+    db = UserDB()
+    periodsdb = PeriodsDB()
+    cyclesdb = CyclesDB()
+    symptomsdb = SymptomsDB()
+
+    logged_in_username = 'bhavnamukherjee'
+
+    four_latest_periods = periodsdb.fetch_latest_periods(logged_in_username, 4)
+    print(four_latest_periods[0])
