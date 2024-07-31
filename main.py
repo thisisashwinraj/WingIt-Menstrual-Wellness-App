@@ -1197,14 +1197,21 @@ if __name__ == "__main__":
                         unsafe_allow_html=True,
                     )
 
-                    st.download_button(
-                        "🥗 Download My Meal Plan",
-                        open(f"assets/meal_plans/{logged_in_username}_meal_plan.txt", "rb").read(),
-                        use_container_width=True,
-                        type="secondary",
-                        key="_button_meal_plan",
-                        file_name="meal_plan.txt",
-                    )
+                    try:
+                        st.download_button(
+                            "🥗 Download My Meal Plan",
+                            open(f"assets/meal_plans/{logged_in_username}_meal_plan.txt", "rb").read(),
+                            use_container_width=True,
+                            type="secondary",
+                            key="_button_meal_plan",
+                            file_name="meal_plan.txt",
+                        )
+
+                    except:
+                        if st.button("🥗 Download My Meal Plan", use_container_width=True):
+                            st.toast("Meal plan unavailable")
+                            time.sleep(2)
+                            st.toast("Generate your meal plan by heading to your profile")
 
                 with st.container(border=True, height=189):
                     st.markdown(
@@ -1219,14 +1226,21 @@ if __name__ == "__main__":
                         unsafe_allow_html=True,
                     )
 
-                    st.download_button(
-                        "🏄‍♂️ Download Exercise Routine",
-                        open(f"assets/exercise_plans/{logged_in_username}_exercise_plan.txt", "rb").read(),
-                        use_container_width=True,
-                        type="secondary",
-                        key="_button_exercise_plan",
-                        file_name="exercise_plan.txt",
-                    )
+                    try:
+                        st.download_button(
+                            "🏄‍♂️ Download Exercise Routine",
+                            open(f"assets/exercise_plans/{logged_in_username}_exercise_plan.txt", "rb").read(),
+                            use_container_width=True,
+                            type="secondary",
+                            key="_button_exercise_plan",
+                            file_name="exercise_plan.txt",
+                        )
+
+                    except:
+                        if st.button("🏄‍♂️ Download Exercise Routine", use_container_width=True):
+                            st.toast("Exercise plan unavailable")
+                            time.sleep(2)
+                            st.toast("Generate your exercise plan by heading to your profile")
 
             bottom_ribbon_col_1, bottom_ribbon_col_2 = st.columns(
                 [
