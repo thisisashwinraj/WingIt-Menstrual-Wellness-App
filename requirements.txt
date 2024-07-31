@@ -1,0 +1,16 @@
+streamlit==1.36.0
+streamlit-antd-components
+matplotlib
+numpy
+pandas
+regex
+joblib
+Pillow
+google-generativeai
+gTTS
+plotly
+wordcloud
+asttokens
+bcrypt
+nltk
+scikit-learn

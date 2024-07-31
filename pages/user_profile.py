@@ -8,13 +8,15 @@ import google.generativeai as genai
 import streamlit as st
 import streamlit_antd_components as sac
 
-from backend.database import UserDB, PostsDB, NotificationsDB
+from backend.database import PeriodsDB, CyclesDB, SymptomsDB
+from backend.database import UserDB, CredentialsDB, NotificationsDB
+from backend.database import PostsDB, WishlistDB, CartDB, OrdersDB, RatingsDB
 from backend.genai_engine import FloAI
 
 
 st.set_page_config(
-    page_title="Flo: Profile",
-    page_icon="assets/favicon/flo_favicon.png",
+    page_title="WingIt: My Profile",
+    page_icon="assets/app_graphics/trident_red.png",
     initial_sidebar_state="expanded",
     layout="wide",
 )
@@ -47,7 +49,7 @@ if "themes" not in st.session_state:
         "dark": {
             "theme.base": "light",
             "theme.backgroundColor": "#fdfefe",
-            "theme.primaryColor": "#FFC0CB",
+            "theme.primaryColor": "#EF6C81",
             "theme.secondaryBackgroundColor": "#f0f2f5",
             "theme.textColor": "#333333",
             "button_face": "🌞",
@@ -181,6 +183,7 @@ if __name__ == "__main__":
             [
                 sac.TabsItem(label="Personal Details"),
                 sac.TabsItem(label="Published Posts"),
+                sac.TabsItem(label="Profile Settings", tag='!'),
             ],
             variant="outline",
         )
@@ -365,7 +368,7 @@ if __name__ == "__main__":
                     time.sleep(5)
                     st.rerun()
 
-        else:
+        elif selected_profile_tab == 'Published Posts':
             with profile_pic_container:
                 st.image(
                     Image.open(logged_in_users_profile_pic_url),
@@ -563,6 +566,151 @@ if __name__ == "__main__":
                             Image.open("assets/app_graphics/adverts_1.jpg"),
                             use_column_width=True,
                         )
+
+        else:
+            with profile_pic_container:
+                st.image(
+                    Image.open(logged_in_users_profile_pic_url),
+                    use_column_width=True,
+                )
+
+            with st.container(border=True):
+                st.markdown(
+                    "<H6>🛠️ Update my Password</H6>", unsafe_allow_html=True
+                )
+
+                cola, colb = st.columns(2)
+
+                with cola:
+                    user_current_password = st.text_input('Enter your old password', type='password', placeholder='Your current password')
+                
+                with colb:
+                    user_new_password = st.text_input('Enter your new password', type='password', placeholder='Your new password')
+
+                if st.button("Update My Password"):
+                    try:
+                        credsdb = CredentialsDB()
+                        is_verified = credsdb.verify_user(st.session_state.logged_in_username, user_current_password)
+                    
+                    except Exception as error:
+                        st.warning("Unable to authenticate you. Please try again later", icon="⚠️")
+
+                    if is_verified:
+                        try:
+                            credsdb.update_password(st.session_state.logged_in_username, user_new_password)
+                            st.success("Your password has been updated", icon="✔️")
+                            time.sleep(3)
+
+                        except Exception as error:
+                            st.warning("Unable to delete your account. Please try again later!", icon="⚠️")
+
+                    else:
+                        st.warning("Your password is incorrect", icon="⚠️")
+
+
+            with st.container(border=True):
+                st.markdown(
+                    "<H6>🛠️ Delete this Account</H6>", unsafe_allow_html=True
+                )
+
+                cola, colb = st.columns(2)
+
+                with cola:
+                    delete_account_selectbox = st.selectbox(
+                        "Do you wish to delete your account? (This action is permanent)",
+                        ['No', 'Yes'],
+                    )
+
+                with colb:
+                    data_recovery_options = st.selectbox(
+                        "Shall we remove you from our mailing list?",
+                        ['No', 'Yes'],
+                    )
+                
+                if delete_account_selectbox == 'Yes':
+                    input_user_password = st.text_input('Enter your password', type='password', placeholder='Enter your password to continue')
+
+                if st.button('Delete This Account') and delete_account_selectbox.lower() == 'yes':
+                    credsdb = CredentialsDB()
+                    is_verified = credsdb.verify_user(st.session_state.logged_in_username, input_user_password)
+
+                    if is_verified:
+                        try:
+                            userdb = UserDB()
+                            userdb.delete_user(st.session_state.logged_in_username)
+
+                            try:
+                                try:
+                                    credsdb = CredentialsDB()
+                                    credsdb.delete_credentials(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    periodsdb = PeriodsDB()
+                                    periodsdb.delete_periods_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    cyclesdb = CyclesDB()
+                                    cyclesdb.delete_cycles_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    symptomsdb = SymptomsDB()
+                                    symptomsdb.delete_symptoms_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    notifsdb = NotificationsDB()
+                                    notifsdb.delete_notifications_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    postsdb = PostsDB()
+                                    postsdb.delete_posts_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    cartdb = CartDB()
+                                    cartdb.delete_cart_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    wishlistdb = WishlistDB()
+                                    wishlistdb.delete_wishlist_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    ordersdb = OrdersDB()
+                                    ordersdb.delete_orders_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                try:
+                                    ratingsdb = RatingsDB()
+                                    ratingsdb.delete_ratings_for_user(st.session_state.logged_in_username)
+                                except Exception as error: print(error)
+
+                                st.success("Your account has been deleted permanently.", icon="✔️")
+                                time.sleep(3)
+
+                                st.session_state.logged_in_username = None
+                                st.session_state.user_authentication_status = None
+
+                                st.switch_page("main.py")
+                                st.rerun()
+
+                            except Exception as error:
+                                st.success("Your account has been deleted succesfully.")
+                                time.sleep(3)
+
+                                print(error)
+                                st.rerun()
+
+                        except Exception as error:
+                            st.warning("Unable to delete your account. Please try again later!", icon="⚠️")
+
+                    else:
+                        st.warning("Your password is incorrect", icon="⚠️")
 
         with profile_pic_container:
             with st.expander("👩‍⚕️ Update your Cycle details", expanded=False):

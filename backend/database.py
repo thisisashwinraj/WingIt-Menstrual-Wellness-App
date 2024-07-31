@@ -66,6 +66,11 @@ class CredentialsDB:
         else:
             return None
 
+    def delete_credentials(self, username):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM credentials WHERE username = ?", (username,))
+        self.conn.commit()
+
 
 class UserDB:
     def __init__(self, db_name="bin/flosql.db"):
@@ -252,6 +257,11 @@ class PeriodsDB:
         )
         self.conn.commit()
 
+    def delete_periods_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Periods WHERE userid = ?", (userid,))
+        self.conn.commit()
+
     def close_connection(self):
         self.conn.close()
 
@@ -336,6 +346,11 @@ class CyclesDB:
             "DELETE FROM Cycles WHERE userid = ? AND start_date = ?",
             (userid, start_date),
         )
+        self.conn.commit()
+
+    def delete_cycles_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Cycles WHERE userid = ?", (userid,))
         self.conn.commit()
 
     def close_connection(self):
@@ -431,6 +446,11 @@ class SymptomsDB:
         )
         self.conn.commit()
 
+    def delete_symptoms_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Symptoms WHERE userid = ?", (userid,))
+        self.conn.commit()
+
     def close_connection(self):
         self.conn.close()
 
@@ -483,6 +503,10 @@ class NotificationsDB:
             self.cursor.execute(fetch_query, (userid,))
 
         return self.cursor.fetchall()
+
+    def delete_notifications_for_user(self, userid):
+        self.cursor.execute("DELETE FROM notifications WHERE userid = ?", (userid,))
+        self.conn.commit()
 
     def close(self):
         self.connection.close()
@@ -641,6 +665,11 @@ class PostsDB:
     def delete_post(self, postid):
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM Posts WHERE postid = ?", (postid,))
+        self.conn.commit()
+
+    def delete_posts_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Posts WHERE userid = ?", (userid,))
         self.conn.commit()
 
     def close_connection(self):
@@ -865,6 +894,11 @@ class WishlistDB:
         )
         self.conn.commit()
 
+    def delete_wishlist_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Wishlist WHERE userid = ?", (userid,))
+        self.conn.commit()
+
     def close_connection(self):
         self.conn.close()
 
@@ -928,6 +962,11 @@ class CartDB:
         cursor.execute(
             "DELETE FROM Cart WHERE productid = ? AND userid = ?", (productid, userid)
         )
+        self.conn.commit()
+
+    def delete_cart_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Cart WHERE userid = ?", (userid,))
         self.conn.commit()
 
     def close_connection(self):
@@ -1018,11 +1057,17 @@ class OrdersDB:
     def get_orderid_for_userid(self, userid):
         cursor = self.conn.cursor()
         cursor.execute("SELECT orderid FROM Orders WHERE userid = ?", (userid,))
-        return cursor.fetchall()
+        orders = cursor.fetchall()
+        return [item[0] for item in orders]
 
     def delete_order(self, orderid):
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM Orders WHERE orderid = ?", (orderid,))
+        self.conn.commit()
+
+    def delete_orders_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Orders WHERE userid = ?", (userid,))
         self.conn.commit()
 
     def close_connection(self):
@@ -1098,6 +1143,11 @@ class RatingsDB:
     def delete_rating(self, ratingid):
         cursor = self.conn.cursor()
         cursor.execute("DELETE FROM Ratings WHERE ratingid = ?", (ratingid,))
+        self.conn.commit()
+
+    def delete_ratings_for_user(self, userid):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM Ratings WHERE userid = ?", (userid,))
         self.conn.commit()
 
     def close_connection(self):

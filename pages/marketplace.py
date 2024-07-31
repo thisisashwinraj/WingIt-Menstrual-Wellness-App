@@ -20,7 +20,7 @@ from backend.database import (
 
 
 st.set_page_config(
-    page_title="Flo: Marketplace",
+    page_title="WingIt: Marketplace",
     page_icon="assets/favicon/flo_favicon.png",
     initial_sidebar_state="expanded",
     layout="wide",
@@ -178,7 +178,8 @@ def display_cart():
                 )
 
             with colb:
-                total_item_price = product[5] * item[3]
+                total_item_price = (product[5] - (product[5] * (product[6] / 100))) * item[3]
+
                 st.markdown(
                     f"<B>{product[1]}</B><BR><B>Quantity:</B> {item[3]} (Total Price: {total_item_price})",
                     unsafe_allow_html=True,
@@ -210,7 +211,8 @@ def display_cart():
             ("Deliver to my registered address", "Deliver to a differet address"),
             placeholder="Select Address",
         )
-        if address_type == "Enter differet address":
+
+        if address_type == "Deliver to a differet address":
             delivery_address = st.text_area(
                 "Enter your delivery address",
                 placeholder="Enter your delivery address",
@@ -346,11 +348,11 @@ if __name__ == "__main__":
         selected_menu_item = sac.menu(
             [
                 sac.MenuItem(
-                    "Flo's Marketplace",
+                    "WingIt's Marketplace",
                     icon="shop-window",
                 ),
                 sac.MenuItem(
-                    "Purchase History",
+                    "My Purchase History",
                     icon="clock-history",
                 ),
                 sac.MenuItem(" ", disabled=True),
@@ -359,7 +361,7 @@ if __name__ == "__main__":
             open_all=True,
         )
 
-    if selected_menu_item == "Flo's Marketplace":
+    if selected_menu_item == "WingIt's Marketplace":
         with st.sidebar:
             with st.container(height=365, border=False):
                 with st.expander("🛠️ Apply Filter on Results", expanded=False):
@@ -387,7 +389,7 @@ if __name__ == "__main__":
         ribbon_col_1, ribbon_col_2, ribbon_col_3 = st.columns([4.6, 1, 0.4])
 
         with ribbon_col_1:
-            st.markdown("<H4>Flo's Marketplace</H4>", unsafe_allow_html=True)
+            st.markdown("<H4>WingIt's Marketplace</H4>", unsafe_allow_html=True)
 
         with ribbon_col_2:
             if st.button("🛍️ Your Cart", use_container_width=True):
@@ -1059,49 +1061,52 @@ if __name__ == "__main__":
             except Exception as error:
                 pass
 
-    elif selected_menu_item == "Purchase History":
+    elif selected_menu_item == "My Purchase History":
         with st.sidebar:
             with st.container(height=365, border=False):
                 with st.expander("🚨 Get Help with Orders", expanded=False):
-                    ordersdb = OrdersDB()
-                    placed_orderids = ordersdb.get_orderid_for_userid(
-                        logged_in_username
-                    )[0]
+                    try:
+                        ordersdb = OrdersDB()
+                        placed_orderids = ordersdb.get_orderid_for_userid(
+                            logged_in_username
+                        )[:]
 
-                    orderid = st.selectbox(
-                        "Order Id:",
-                        placed_orderids,
-                        placeholder="Select Order Id",
-                        index=None,
-                        label_visibility="collapsed",
-                    )
-                    query = st.text_area(
-                        "Write your query",
-                        placeholder="Enter your query, and we'll respond back within an hour",
-                        label_visibility="collapsed",
-                    )
+                        orderid = st.selectbox(
+                            "Order Id:",
+                            placed_orderids,
+                            placeholder="Select Order Id",
+                            index=None,
+                            label_visibility="collapsed",
+                        )
+                        query = st.text_area(
+                            "Write your query",
+                            placeholder="Enter your query, and we'll respond back within an hour",
+                            label_visibility="collapsed",
+                        )
 
-                    if st.button(
-                        "📧 Send Request", use_container_width=True, disabled=not (query)
-                    ):
-                        try:
-                            if orderid is None:
-                                orderid = "General Ticket"
+                        if st.button(
+                            "📧 Send Request", use_container_width=True, disabled=not (query)
+                        ):
+                            try:
+                                if orderid is None:
+                                    orderid = "General Ticket"
 
-                            mail_utils = MailUtils()
-                            mail_utils.get_help_with_orders(
-                                logged_in_username, orderid, query
-                            )
+                                mail_utils = MailUtils()
+                                mail_utils.get_help_with_orders(
+                                    logged_in_username, orderid, query
+                                )
 
-                            success_msg = st.success("Request registered", icon="✔️")
-                            st.toast("Our support team will soon reach out to you.")
+                                success_msg = st.success("Request registered", icon="✔️")
+                                st.toast("Our support team will soon reach out to you.")
 
-                            time.sleep(2)
-                            success_msg.empty()
+                                time.sleep(2)
+                                success_msg.empty()
 
-                        except Exception as err:
-                            st.toast(err)
-                            st.warning("Unable to register your request", icon="⚠️")
+                            except Exception as err:
+                                st.toast(err)
+                                st.warning("Unable to register your request", icon="⚠️")
+
+                    except Exception as err: pass
 
             if st.button("Return to Dashboard", use_container_width=True):
                 st.switch_page("main.py")
@@ -1125,7 +1130,7 @@ if __name__ == "__main__":
         ribbon_col_1, ribbon_col_2, ribbon_col_3 = st.columns([4.6, 1, 0.4])
 
         with ribbon_col_1:
-            st.markdown("<H4>Purchase History</H4>", unsafe_allow_html=True)
+            st.markdown("<H4>My Purchase History</H4>", unsafe_allow_html=True)
 
         with ribbon_col_2:
             if st.button("🛍️ Your Cart", use_container_width=True):

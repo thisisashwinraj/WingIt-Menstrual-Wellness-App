@@ -1,3 +1,7 @@
+[server]
+enableXsrfProtection = false
+enableCORS = false
+
 [client]
 showSidebarNavigation = false
 showErrorDetails = false

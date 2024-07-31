@@ -8,6 +8,7 @@ import sys
 import logging
 import datetime
 import pandas as pd
+import streamlit as st
 
 from email import encoders
 from email.mime.multipart import MIMEMultipart
@@ -32,8 +33,7 @@ class MailUtils:
         message = MIMEMultipart()
 
         message["To"] = self.receivers_email_id
-
-        message["From"] = credentials.SENDER_EMAIL_ID
+        message["From"] = st.secrets["sender_email_id"] 
 
         message["Subject"] = f"Help Requested with Order Id: #{orderid}"
 
@@ -77,8 +77,8 @@ class MailUtils:
         server.starttls()
         server.ehlo()
 
-        server.login(credentials.SENDER_EMAIL_ID, credentials.SENDER_PASSWORD)
+        server.login(st.secrets["sender_email_id"], st.secrets["sender_email_password"]  )
         text = message.as_string()
 
-        server.sendmail(credentials.SENDER_EMAIL_ID, self.receivers_email_id, text)
+        server.sendmail(st.secrets["sender_email_id"], self.receivers_email_id, text)
         server.quit()

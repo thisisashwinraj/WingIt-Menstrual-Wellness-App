@@ -1,17 +1,17 @@
 import re
 import sqlite3
 import string
+import streamlit as st
 from datetime import datetime, timezone, timedelta
 
 import google.generativeai as genai
 
 from backend.database import UserDB
-from configs import credentials
 
 
 class FloAI:
     def __init__(self):
-        genai.configure(api_key=str(credentials.GEMINI_API_KEY))
+        genai.configure(api_key=st.secrets["gemini_api_key"])
 
     def analyze_symptoms(self, query):
         model = genai.GenerativeModel("gemini-1.5-flash")

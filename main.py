@@ -16,7 +16,7 @@ from configs import credentials
 
 
 st.set_page_config(
-    page_title="Flo: Your Period Buddy",
+    page_title="WingIt: Home",
     page_icon="assets/favicon/flo_favicon.png",
     initial_sidebar_state="expanded",
     layout="wide",
@@ -93,6 +93,38 @@ def display_latest_notification():
             st.info(notifs[3], icon=":material/drafts:")
         else:
             st.info(notifs[3], icon=":material/forum:")
+
+
+@st.experimental_dialog("LogIn to WingIt")
+def user_login():
+    username = st.text_input(
+        "Username", placeholder="Username", label_visibility="collapsed"
+    )
+    password = st.text_input(
+        "Password",
+        placeholder="Password",
+        type="password",
+        label_visibility="collapsed",
+    )
+
+    cola, _ = st.columns(2)
+
+    with cola:
+        login_to_profile_button = st.button("LogIn Now", use_container_width=True)
+
+    
+    if login_to_profile_button:
+        credsdb = CredentialsDB()
+        is_verified = credsdb.verify_user(username, password)
+
+        if is_verified:
+            st.session_state.user_authentication_status = True
+            st.session_state.logged_in_username = username
+            st.rerun()
+
+        else:
+            st.warning("Incorrect LogIn Credentials", icon="⚠️")
+            time.sleep(3)
 
 
 @st.experimental_dialog("Edit Cycle Details")
@@ -464,15 +496,15 @@ if __name__ == "__main__":
             selected_menu_item = sac.menu(
                 [
                     sac.MenuItem(
-                        "My Dashboard",
+                        "Your Dashboard",
                         icon="grid",
                     ),
                     sac.MenuItem(
-                        "Flo Community",
+                        "Our Community",
                         icon="clipboard-pulse",
                     ),
                     sac.MenuItem(
-                        "Chat with FloAI",
+                        "Chat with WingIt",
                         icon="chat-square-text",
                     ),
                     sac.MenuItem(" ", disabled=True),
@@ -481,7 +513,7 @@ if __name__ == "__main__":
                 open_all=True,
             )
 
-        if selected_menu_item == "My Dashboard":
+        if selected_menu_item == "Your Dashboard":
             floai = FloAI()
 
             with st.sidebar:
@@ -563,15 +595,21 @@ if __name__ == "__main__":
                 )
                 patient_details_container.write(" ")
 
-                patient_details_container.image(
-                    logged_in_users_profile_pic_url, use_column_width=True
-                )
+                try:
+                    patient_details_container.image(
+                        logged_in_users_profile_pic_url, use_column_width=True
+                    )
+                except:
+                    patient_details_container.image(
+                        "assets/user_profile/sample.png", use_column_width=True
+                    )
+
                 patient_details_container.markdown(
                     f"""<H5 style="padding: 0px 0px;"><center>{logged_in_users_full_name}</H5></center>""",
                     unsafe_allow_html=True,
                 )
                 patient_details_container.markdown(
-                    f"""<center>Flo Username: {logged_in_username}</center>""",
+                    f"""<center>WingIt Username: {logged_in_username}</center>""",
                     unsafe_allow_html=True,
                 )
 
@@ -1159,11 +1197,13 @@ if __name__ == "__main__":
                         unsafe_allow_html=True,
                     )
 
-                    st.button(
+                    st.download_button(
                         "🥗 Download My Meal Plan",
+                        open(f"assets/meal_plans/{logged_in_username}_meal_plan.txt", "rb").read(),
                         use_container_width=True,
                         type="secondary",
                         key="_button_meal_plan",
+                        file_name="meal_plan.txt",
                     )
 
                 with st.container(border=True, height=189):
@@ -1179,10 +1219,13 @@ if __name__ == "__main__":
                         unsafe_allow_html=True,
                     )
 
-                    st.button(
+                    st.download_button(
                         "🏄‍♂️ Download Exercise Routine",
+                        open(f"assets/exercise_plans/{logged_in_username}_exercise_plan.txt", "rb").read(),
                         use_container_width=True,
-                        key="_button_exercise_routine",
+                        type="secondary",
+                        key="_button_exercise_plan",
+                        file_name="exercise_plan.txt",
                     )
 
             bottom_ribbon_col_1, bottom_ribbon_col_2 = st.columns(
@@ -1248,7 +1291,7 @@ if __name__ == "__main__":
                         unsafe_allow_html=True,
                     )
 
-        elif selected_menu_item == "Flo Community":
+        elif selected_menu_item == "Our Community":
             with st.sidebar:
                 with st.container(height=325, border=False):
                     st.success(
@@ -1278,7 +1321,7 @@ if __name__ == "__main__":
             ribbon_col_1, ribbon_col_2, ribbon_col_3 = st.columns([4.6, 1, 0.4])
 
             with ribbon_col_1:
-                st.markdown("<H4>Flo Community</H4>", unsafe_allow_html=True)
+                st.markdown("<H4>Our Community</H4>", unsafe_allow_html=True)
 
             with ribbon_col_2:
                 if st.button("🛍️ Marketplace", use_container_width=True):
@@ -1318,7 +1361,6 @@ if __name__ == "__main__":
                             button_publish_post = st.form_submit_button(
                                 "Share my Post",
                                 use_container_width=True,
-                                type="primary",
                             )
 
                         if button_publish_post:
@@ -1869,7 +1911,7 @@ if __name__ == "__main__":
                 except Exception as err:
                     pass
 
-        elif selected_menu_item == "Chat with FloAI":
+        elif selected_menu_item == "Chat with WingIt":
             with st.sidebar:
                 with st.container(height=325, border=False):
                     st.warning(
@@ -1896,7 +1938,7 @@ if __name__ == "__main__":
 
             st.write(" ")
 
-            genai.configure(api_key=str(credentials.GEMINI_API_KEY))
+            genai.configure(api_key=st.secrets["gemini_api_key"])
 
             if "messages" not in st.session_state:
                 st.session_state.messages = []
@@ -1945,53 +1987,32 @@ if __name__ == "__main__":
                 )
 
     else:
-        with st.sidebar:
-            selected_menu_item = sac.menu(
-                [
-                    sac.MenuItem(
-                        "Welcome to Flo",
-                        icon="grid",
-                    ),
-                    sac.MenuItem(
-                        "More About Flo",
-                        icon="grid",
-                    ),
-                    sac.MenuItem(" ", disabled=True),
-                    sac.MenuItem(type="divider"),
-                ],
-                open_all=True,
-            )
+        st.markdown("<BR>"*2, unsafe_allow_html=True)
 
-            with st.expander("LogIn to your Flo account", expanded=True):
-                username = st.text_input(
-                    "Username", placeholder="Username", label_visibility="collapsed"
-                )
-                password = st.text_input(
-                    "Password",
-                    placeholder="Password",
-                    type="password",
-                    label_visibility="collapsed",
-                )
-
-                if st.button("LogIn to Flo", use_container_width=True):
-                    credsdb = CredentialsDB()
-                    is_verified = credsdb.verify_user(username, password)
-
-                    if is_verified:
-                        st.session_state.user_authentication_status = True
-                        st.session_state.logged_in_username = username
-                        st.rerun()
-
-                    else:
-                        st.warning("Incorrect LogIn Credentials", icon="⚠️")
-                        time.sleep(3)
-                        st.rerun()
+        _, button_col, _ = st.columns([8, 1, 8])
+        with button_col:
+            st.image(Image.open("assets/app_graphics/trident_red.png"), use_column_width=True)
 
         st.markdown("<BR>", unsafe_allow_html=True)
-        st.markdown("<H2>Welcome to Flo</H2>", unsafe_allow_html=True)
+        st.markdown("<center><H2>Welcome to WingIt. Build the future of women's health!</H2></center><BR>", unsafe_allow_html=True)
+
+        _, button_col, _ = st.columns([1.5, 1, 1.5])
+
+        with button_col:
+            if st.button('LogIn to WingIt', use_container_width=True):
+                user_login()
+
+        _, button_col, _ = st.columns([1, 2, 1])
+
+        with button_col:
+            st.markdown("<BR>"*2, unsafe_allow_html=True)
+        st.video("https://youtu.be/SSC12rZdU6M?si=83ffRxvdTTnydhGd")
+
+        st.markdown("<BR>", unsafe_allow_html=True)
+        st.markdown("<center><H2>New to WingIt? Create an Account Now!</H2></center><BR>", unsafe_allow_html=True)
 
         st.markdown(
-            "Lorem ipsum dolor mit abeit ul adbar beden jam grainger loddol orem ipsum dolor mit abeit ul adbar beden jam grainger lod orem ipsum dolor mit abeit ul adbar beden jam grainger lod orem ipsum dolor mit abeit ul adbar beden jam grainger lod orem ipsum dol",
+            "Welcome to WingIt - your periods buddy! Easily log your periods and symptoms, shop for health products in our marketplace, and connect with others in our supportive community. Get quick, personalized insights with our AI chatbot. We're here to help you take control of your menstrual health, and well-being. Join us & experience a new level of care & support!",
             unsafe_allow_html=True,
         )
         st.write(" ")
@@ -2302,18 +2323,13 @@ if __name__ == "__main__":
 
                                         else:
                                             try:
-                                                uploaded_filename = (
-                                                    new_file_uploaded.name
-                                                )
-                                                profile_pic_url = os.path.join(
-                                                    "assets/user_profile",
-                                                    uploaded_filename,
-                                                )
+                                                uploaded_image = st.session_state.signup_uploaded_profile_pic
+                                                profile_pic_url = f"assets/user_profile/{uploaded_image.name}"
 
-                                                with open(profile_pic_url, "wb") as f:
-                                                    f.write(
-                                                        new_file_uploaded.getbuffer()
-                                                    )
+                                                with open(
+                                                    profile_pic_url, "wb"
+                                                ) as image_file:
+                                                    image_file.write(uploaded_image.getbuffer())
 
                                             except:
                                                 profile_pic_url = (
@@ -2388,7 +2404,7 @@ if __name__ == "__main__":
                                         st.rerun()
 
                                     except Exception as err:
-                                        st.error(err, icon="🚨")
+                                        st.error(f"error: {err}", icon="🚨")
 
                                 else:
                                     display_warning = st.warning(
@@ -2418,4 +2434,4 @@ if __name__ == "__main__":
                         time.sleep(2)
                         display_warning.empty()
 
-        st.markdown("<BR>Read about Menstrual Health here →", unsafe_allow_html=True)
+        st.markdown("<BR>"*2, unsafe_allow_html=True)
